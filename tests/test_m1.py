@@ -61,12 +61,12 @@ def test_concurrent_requests_cannot_over_allocate(seeded_project):
     app, barrier = create_app(seeded_project.database_url), Barrier(2)
     payload = {"employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 30,
         "start_date": "2026-01-01", "end_date": "2026-03-31"}
-    def request(_):
-        with TestClient(app) as client:
+    with TestClient(app) as client:
+        def request(_):
             barrier.wait()
             return client.post("/allocations", json=payload).status_code
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        statuses = list(pool.map(request, range(2)))
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            statuses = list(pool.map(request, range(2)))
     assert sorted(statuses) == [201, 409]
     with seeded_project.session_factory() as session:
         total = sum(x.allocation_percentage for x in session.query(Allocation).filter_by(employee_id="EMP001", status="active"))

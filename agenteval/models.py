@@ -1,5 +1,5 @@
 """SQLAlchemy schema for the M1 resource-allocation domain."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -20,8 +20,8 @@ class Project(Base):
     __table_args__ = (CheckConstraint("start_date <= end_date", name="ck_project_dates"),)
     project_id: Mapped[str] = mapped_column(String(64), primary_key=True)
     project_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    start_date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
 
 class Allocation(Base):
@@ -36,8 +36,8 @@ class Allocation(Base):
     employee_id: Mapped[str] = mapped_column(ForeignKey("employees.employee_id", ondelete="RESTRICT"), nullable=False)
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.project_id", ondelete="RESTRICT"), nullable=False)
     allocation_percentage: Mapped[int] = mapped_column(Integer, nullable=False)
-    start_date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
-    end_date: Mapped[datetime.date] = mapped_column(Date, nullable=False)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[date] = mapped_column(Date, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
 
 class BusinessPolicy(Base):
