@@ -34,18 +34,53 @@ def get_project(session: Session, project_id: str) -> Project:
         raise BusinessError("project_not_found", "Project not found.", 404)
     return value
 
+def _peak_allocated_percentage(session: Session, employee_id: str, start_date: date, end_date: date) -> int:
+    """Return the greatest simultaneous active allocation on any day in the interval."""
+    rows = session.scalars(select(Allocation).where(
+        Allocation.employee_id == employee_id,
+        Allocation.status == "active",
+        Allocation.start_date <= end_date,
+        Allocation.end_date >= start_date,
+    )).all()
+    # Sweep integer day boundaries. The end boundary is exclusive, so adjacent
+    # allocations ending/starting on consecutive days do not overlap.
+    events: dict[int, int] = {}
+    interval_end = end_date.toordinal() + 1
+    for row in rows:
+        left = max(start_date, row.start_date).toordinal()
+        right = min(end_date, row.end_date).toordinal() + 1
+        events[left] = events.get(left, 0) + row.allocation_percentage
+        events[right] = events.get(right, 0) - row.allocation_percentage
+    current = peak = 0
+    for boundary in sorted(events):
+        current += events[boundary]
+        if boundary < interval_end:
+            peak = max(peak, current)
+    return peak
+
+
+def _allocation_payload(allocation: Allocation) -> dict:
+    """Capture the original successful response for stable idempotent replay."""
+    return {
+        "allocation_id": allocation.allocation_id,
+        "employee_id": allocation.employee_id,
+        "project_id": allocation.project_id,
+        "allocation_percentage": allocation.allocation_percentage,
+        "start_date": allocation.start_date.isoformat(),
+        "end_date": allocation.end_date.isoformat(),
+        "status": allocation.status,
+    }
+
+
 def get_availability(session: Session, employee_id: str, start_date: date, end_date: date) -> dict:
     if start_date > end_date:
         raise BusinessError("invalid_date_range", "start_date must be on or before end_date.", 400)
     employee = get_employee(session, employee_id)
     if employee.status != "active":
         raise BusinessError("employee_inactive", "Employee is not active.", 409)
-    used = session.scalar(select(func.coalesce(func.sum(Allocation.allocation_percentage), 0)).where(
-        Allocation.employee_id == employee_id, Allocation.status == "active",
-        Allocation.start_date <= end_date, Allocation.end_date >= start_date,
-    ))
+    allocated = _peak_allocated_percentage(session, employee_id, start_date, end_date)
     return {"employee_id": employee_id, "capacity_percentage": employee.capacity_percentage,
-        "allocated_percentage": int(used), "available_percentage": max(employee.capacity_percentage - int(used), 0),
+        "allocated_percentage": allocated, "available_percentage": max(employee.capacity_percentage - allocated, 0),
         "start_date": start_date, "end_date": end_date}
 
 def create_allocation(session: Session, *, employee_id: str, project_id: str,
@@ -66,7 +101,7 @@ def create_allocation(session: Session, *, employee_id: str, project_id: str,
                 if prior:
                     if prior.request_hash != digest:
                         raise BusinessError("idempotency_key_reused", "This idempotency key was used for another request.", 409)
-                    return session.get(Allocation, prior.response_body["allocation_id"]), True
+                    return Allocation(**prior.response_body), True
             employee, project = get_employee(session, employee_id), get_project(session, project_id)
             if employee.status != "active":
                 raise BusinessError("employee_inactive", "Employee is not active.", 409)
@@ -91,7 +126,7 @@ def create_allocation(session: Session, *, employee_id: str, project_id: str,
                 event_details={"allocation_percentage": allocation_percentage}))
             if idempotency_key:
                 session.add(IdempotencyRecord(idempotency_key=idempotency_key, request_hash=digest,
-                    response_body={"allocation_id": allocation.allocation_id}))
+                    response_body=_allocation_payload(allocation)))
             return allocation, False
     except OperationalError as exc:
         _raise_busy(exc)
