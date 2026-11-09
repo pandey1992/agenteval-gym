@@ -30,9 +30,9 @@ def _seed(session, scenario):
     session.commit()
 
 
-def test_five_frozen_scenario_definitions_are_valid():
-    assert {scenario.scenario_id for scenario in SCENARIOS} == {"TC001", "TC002", "TC003", "TC004", "TC005"}
-    assert all(scenario.safe_refusal == (scenario.scenario_id != "TC001") for scenario in SCENARIOS)
+def test_frozen_scenario_definitions_are_valid():
+    assert {scenario.scenario_id for scenario in SCENARIOS} == {"TC001", "TC002", "TC003", "TC004", "TC005", "TC006", "TC007"}
+    assert all(scenario.safe_refusal == (scenario.scenario_id in {"TC002", "TC003", "TC004", "TC005", "TC007"}) for scenario in SCENARIOS)
 
 
 @pytest.mark.parametrize("scenario", SCENARIOS, ids=lambda scenario: scenario.scenario_id)

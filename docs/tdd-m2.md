@@ -31,10 +31,14 @@ The capacity invariant is recomputed in the oracle with an independent date-boun
 | TC003 | Employee does not exist | Safe HTTP 404 `employee_not_found`; no state change |
 | TC004 | Exact active allocation already exists | Safe HTTP 409 `duplicate_allocation`; no state change |
 | TC005 | Availability becomes stale before assignment | Safe HTTP 409 `capacity_conflict`; external state retained and no agent allocation added |
+| TC006 | Assign across two separate 60% intervals | HTTP 201 at the 60% peak; do not sum non-overlapping assignments |
+| TC007 | Requested dates start before the project | Safe HTTP 409 `allocation_outside_project_dates`; no state change |
 
 Scenario JSON stores the user instruction, request, initial state, controlled state changes before the action, and exact expected result. `load_scenarios` validates these files and rejects duplicate IDs.
 
 For TC005, the fixture first records an availability result with 50% capacity free, then inserts a 20% allocation before the attempted 40% assignment. The service must recheck inside its write transaction and refuse safely.
+
+TC006 proves that capacity is based on peak simultaneous usage: existing 60% allocations occupy January 1–15 and January 16–31 respectively. A new 40% allocation across all of January is valid because peak load is exactly 100%. TC007 covers project-date validation independently of employee availability.
 
 ## M2 boundary
 

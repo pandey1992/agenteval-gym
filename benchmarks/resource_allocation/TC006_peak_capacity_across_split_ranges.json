@@ -1,0 +1,28 @@
+{
+  "scenario_id": "TC006",
+  "title": "Use peak capacity across separate date ranges",
+  "user_instruction": "Assign EMP001 to PROJ003 for 40% from 2026-01-01 through 2026-01-31.",
+  "request": {"employee_id": "EMP001", "project_id": "PROJ003", "allocation_percentage": 40, "start_date": "2026-01-01", "end_date": "2026-01-31"},
+  "initial_state": {
+    "employees": [{"employee_id": "EMP001", "name": "Asha Rao", "department": "Engineering", "capacity_percentage": 100}],
+    "projects": [
+      {"project_id": "PROJ001", "project_name": "Alpha", "start_date": "2025-01-01", "end_date": "2027-12-31"},
+      {"project_id": "PROJ002", "project_name": "Beta", "start_date": "2025-01-01", "end_date": "2027-12-31"},
+      {"project_id": "PROJ003", "project_name": "Gamma", "start_date": "2025-01-01", "end_date": "2027-12-31"}
+    ],
+    "allocations": [
+      {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 60, "start_date": "2026-01-01", "end_date": "2026-01-15"},
+      {"employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 60, "start_date": "2026-01-16", "end_date": "2026-01-31"}
+    ]
+  },
+  "expected": {
+    "status_code": 201,
+    "final_allocations": [
+      {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 60, "start_date": "2026-01-01", "end_date": "2026-01-15"},
+      {"employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 60, "start_date": "2026-01-16", "end_date": "2026-01-31"},
+      {"employee_id": "EMP001", "project_id": "PROJ003", "allocation_percentage": 40, "start_date": "2026-01-01", "end_date": "2026-01-31"}
+    ],
+    "event_delta": 1
+  }
+}
+
