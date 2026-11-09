@@ -40,7 +40,7 @@ For TC005, the fixture first records an availability result with 50% capacity fr
 
 TC006 proves that capacity is based on peak simultaneous usage: existing 60% allocations occupy January 1–15 and January 16–31 respectively. A new 40% allocation across all of January is valid because peak load is exactly 100%. TC007 covers project-date validation independently of employee availability.
 
-## M2 boundary
+## Next milestones
 
-M2 provides scenario data, validation, snapshotting, invariants and deterministic verdicts. It does not yet schedule arbitrary agents, inject runtime faults, create traces, or generate reports; those belong to M3/M4.
+M3 adds a framework-neutral scenario runner, HTTP tool wrappers, trace capture and deterministic fault injection. M4 can add public pytest fixtures and evaluation reports.
 

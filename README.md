@@ -6,6 +6,8 @@ M1 provides a SQLite resource-allocation environment, transaction-safe business 
 
 M2 adds a deterministic evaluation oracle and seven versioned resource-allocation benchmark scenarios. The oracle inspects database state independently of the agent-facing API; expected safe refusals count as successful outcomes.
 
+M3 adds a framework-neutral scenario runner, HTTP tool wrappers, tool-call traces, and deterministic fault injection for retries.
+
 ## Requirements
 Python 3.11+ and uv, or Docker with Compose. SQLite is embedded; no database server or paid service is needed.
 
@@ -30,4 +32,5 @@ The standalone API uses `./agenteval.db` by default. Set `AGENTEEVAL_DATABASE_UR
 
 See [docs/tdd-m1.md](docs/tdd-m1.md) for the M1 contracts and API surface.
 See [docs/tdd-m2.md](docs/tdd-m2.md) for the oracle contract and scenario format.
+See [docs/tdd-m3.md](docs/tdd-m3.md) for the execution and fault-injection contract.
 
