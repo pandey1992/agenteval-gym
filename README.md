@@ -8,6 +8,8 @@ M2 adds a deterministic evaluation oracle and seven versioned resource-allocatio
 
 M3 adds a framework-neutral scenario runner, HTTP tool wrappers, tool-call traces, and deterministic fault injection for retries.
 
+M4 packages reusable pytest fixtures and JSON evaluation reports, with a GitHub Actions test workflow.
+
 ## Requirements
 Python 3.11+ and uv, or Docker with Compose. SQLite is embedded; no database server or paid service is needed.
 
@@ -16,13 +18,31 @@ Python 3.11+ and uv, or Docker with Compose. SQLite is embedded; no database ser
 uv sync --group dev
 uv run pytest
 ```
-The first sync resolves dependencies and creates `uv.lock`; commit that lockfile for reproducible development installs.
+The committed `uv.lock` keeps development installs reproducible.
 
 ## Run with Docker
 ```bash
 docker compose run --build --rm app
 ```
 Docker runs the same test suite and is optional for local use.
+
+## Use the pytest fixtures
+Install the project and its development dependencies with `uv sync --group dev`. The installed pytest plugin provides `project_env` (a fresh SQLite schema), `agenteval_scenarios` (validated benchmark definitions), and `agent_runner` (a synchronous fixture for running an async agent against one isolated scenario).
+
+```python
+def test_agent_handles_capacity_conflict(agent_runner, agenteval_scenarios):
+    scenario = next(item for item in agenteval_scenarios if item.scenario_id == "TC002")
+    result = agent_runner.run(scenario, my_agent)
+    assert result.passed
+```
+
+Write a compact machine-readable summary of all scenario runs made by the plugin fixtures with:
+
+```bash
+uv run pytest --agenteval-report artifacts/agenteval-report.json
+```
+
+The report includes pass/fail totals, named oracle checks, tool traces, and final-state counts. It does not include database credentials or database files.
 
 ## Start the mock API
 ```bash
@@ -33,4 +53,4 @@ The standalone API uses `./agenteval.db` by default. Set `AGENTEEVAL_DATABASE_UR
 See [docs/tdd-m1.md](docs/tdd-m1.md) for the M1 contracts and API surface.
 See [docs/tdd-m2.md](docs/tdd-m2.md) for the oracle contract and scenario format.
 See [docs/tdd-m3.md](docs/tdd-m3.md) for the execution and fault-injection contract.
-
+See [docs/tdd-m4.md](docs/tdd-m4.md) for pytest fixtures, reporting, and CI behavior.

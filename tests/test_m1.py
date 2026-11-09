@@ -68,24 +68,24 @@ def test_duplicate_and_idempotency_contracts(seeded_project):
     with seeded_project.session_factory() as session:
         assert session.query(AllocationEvent).count() == 1
 
-def test_api_returns_safe_conflict(seeded_project, agent_runner):
+def test_api_returns_safe_conflict(seeded_project, api_client):
     add_allocation(seeded_project, percentage=80)
-    response = agent_runner.post("/allocations", json={
+    response = api_client.post("/allocations", json={
         "employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 30,
         "start_date": "2026-01-01", "end_date": "2026-03-31"})
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "capacity_conflict"
 
-def test_idempotent_retry_replays_original_response_after_cancellation(seeded_project, agent_runner):
+def test_idempotent_retry_replays_original_response_after_cancellation(seeded_project, api_client):
     payload = {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 30,
         "start_date": "2026-01-01", "end_date": "2026-03-31"}
     headers = {"Idempotency-Key": "stable-after-cancel"}
-    original = agent_runner.post("/allocations", json=payload, headers=headers)
+    original = api_client.post("/allocations", json=payload, headers=headers)
     assert original.status_code == 201
     allocation_id = original.json()["allocation_id"]
-    cancelled = agent_runner.delete(f"/allocations/{allocation_id}")
+    cancelled = api_client.delete(f"/allocations/{allocation_id}")
     assert cancelled.status_code == 204
-    replay = agent_runner.post("/allocations", json=payload, headers=headers)
+    replay = api_client.post("/allocations", json=payload, headers=headers)
     assert replay.status_code == 201
     assert replay.json() == original.json()
 

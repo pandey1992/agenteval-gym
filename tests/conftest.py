@@ -1,30 +1,11 @@
-from dataclasses import dataclass
 from datetime import date
 import pytest
 from fastapi.testclient import TestClient
 from agenteval.api import create_app
-from agenteval.database import create_schema, make_engine, make_session_factory
 from agenteval.models import Employee, Project
 
-@dataclass
-class ProjectEnvironment:
-    database_url: str
-    engine: object
-    session_factory: object
-
 @pytest.fixture
-def project_env(tmp_path):
-    url = f"sqlite:///{tmp_path / 'benchmark.db'}"
-    engine = make_engine(url)
-    create_schema(engine)
-    env = ProjectEnvironment(url, engine, make_session_factory(engine))
-    try:
-        yield env
-    finally:
-        engine.dispose()
-
-@pytest.fixture
-def agent_runner(project_env):
+def api_client(project_env):
     with TestClient(create_app(project_env.database_url)) as client:
         yield client
 
