@@ -101,7 +101,10 @@ def create_allocation(session: Session, *, employee_id: str, project_id: str,
                 if prior:
                     if prior.request_hash != digest:
                         raise BusinessError("idempotency_key_reused", "This idempotency key was used for another request.", 409)
-                    return Allocation(**prior.response_body), True
+                    snapshot = dict(prior.response_body)
+                    snapshot["start_date"] = date.fromisoformat(snapshot["start_date"])
+                    snapshot["end_date"] = date.fromisoformat(snapshot["end_date"])
+                    return Allocation(**snapshot), True
             employee, project = get_employee(session, employee_id), get_project(session, project_id)
             if employee.status != "active":
                 raise BusinessError("employee_inactive", "Employee is not active.", 409)

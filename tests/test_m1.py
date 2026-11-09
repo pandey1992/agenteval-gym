@@ -60,6 +60,7 @@ def test_duplicate_and_idempotency_contracts(seeded_project):
     with seeded_project.session_factory() as session:
         replay, replay2 = create_allocation(session, **args)
     assert first.allocation_id == replay.allocation_id and not replay1 and replay2
+    assert replay.start_date == START and replay.end_date == END
     with seeded_project.session_factory() as session:
         with pytest.raises(BusinessError) as error:
             create_allocation(session, **{**args, "allocation_percentage": 40})
