@@ -27,4 +27,5 @@ The `project_env` fixture creates a fresh file database in pytest's `tmp_path`, 
 - `DELETE /allocations/{id}` (soft cancellation)
 
 ## Later milestones
-Scenario loading, agent adapters, oracle/scoring, fault injection, traces and reports are deferred.
+M2 defines the deterministic oracle and initial benchmark scenarios. Agent adapters, general scenario execution, fault injection, traces and reports remain later work.
+

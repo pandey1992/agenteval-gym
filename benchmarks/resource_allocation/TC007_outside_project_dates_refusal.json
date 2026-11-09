@@ -1,0 +1,14 @@
+{
+  "scenario_id": "TC007",
+  "title": "Safely refuse dates outside the project window",
+  "user_instruction": "Assign EMP001 to PROJ001 for 30% from 2026-01-01 through 2026-03-31.",
+  "request": {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 30, "start_date": "2026-01-01", "end_date": "2026-03-31"},
+  "initial_state": {
+    "employees": [{"employee_id": "EMP001", "name": "Asha Rao", "department": "Engineering", "capacity_percentage": 100}],
+    "projects": [{"project_id": "PROJ001", "project_name": "Alpha", "start_date": "2026-02-01", "end_date": "2027-12-31"}],
+    "allocations": []
+  },
+  "expected": {"status_code": 409, "error_code": "allocation_outside_project_dates", "final_allocations": [], "event_delta": 0},
+  "safe_refusal": true
+}
+

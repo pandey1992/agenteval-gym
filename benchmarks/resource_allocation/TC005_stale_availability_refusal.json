@@ -1,0 +1,26 @@
+{
+  "scenario_id": "TC005",
+  "title": "Recheck stale availability before assignment",
+  "user_instruction": "Assign EMP001 to PROJ001 for 40% from 2026-01-01 through 2026-03-31.",
+  "request": {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 40, "start_date": "2026-01-01", "end_date": "2026-03-31"},
+  "initial_state": {
+    "employees": [{"employee_id": "EMP001", "name": "Asha Rao", "department": "Engineering", "capacity_percentage": 100}],
+    "projects": [
+      {"project_id": "PROJ001", "project_name": "Alpha", "start_date": "2025-01-01", "end_date": "2027-12-31"},
+      {"project_id": "PROJ002", "project_name": "Beta", "start_date": "2025-01-01", "end_date": "2027-12-31"}
+    ],
+    "allocations": [{"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 50, "start_date": "2026-01-01", "end_date": "2026-03-31"}]
+  },
+  "state_changes_before_action": [{"employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 20, "start_date": "2026-01-01", "end_date": "2026-03-31"}],
+  "expected": {
+    "status_code": 409,
+    "error_code": "capacity_conflict",
+    "final_allocations": [
+      {"employee_id": "EMP001", "project_id": "PROJ001", "allocation_percentage": 50, "start_date": "2026-01-01", "end_date": "2026-03-31"},
+      {"employee_id": "EMP001", "project_id": "PROJ002", "allocation_percentage": 20, "start_date": "2026-01-01", "end_date": "2026-03-31"}
+    ],
+    "event_delta": 0
+  },
+  "safe_refusal": true
+}
+
