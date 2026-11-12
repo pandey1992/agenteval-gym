@@ -23,6 +23,7 @@ class ScenarioRunResult:
     agent_result: AgentRunResult
     tool_trace: tuple[ToolTrace, ...]
     final_state: StateSnapshot
+    initial_state: StateSnapshot
 
     @property
     def passed(self) -> bool:
@@ -79,7 +80,7 @@ class ScenarioRunner:
                 error = response.body.get("error") if isinstance(response.body, dict) else None
                 outcome = ObservedOutcome(response.status_code, error.get("code") if isinstance(error, dict) else None)
             verdict = evaluate_scenario(scenario, before_action, after, outcome)
-            return ScenarioRunResult(scenario.scenario_id, verdict, agent_result, trace, after)
+            return ScenarioRunResult(scenario.scenario_id, verdict, agent_result, trace, after, before_action)
         finally:
             oracle_engine.dispose()
 
@@ -117,4 +118,3 @@ class ScenarioRunner:
                 session.add(AllocationEvent(allocation_id=allocation.allocation_id,
                     event_type="external_change", event_details={}))
             session.commit()
-
