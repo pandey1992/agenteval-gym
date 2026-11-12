@@ -42,7 +42,7 @@ Write a compact machine-readable summary of all scenario runs made by the plugin
 uv run pytest --agenteval-report artifacts/agenteval-report.json
 ```
 
-The report includes pass/fail totals, named oracle checks, tool traces, and final-state counts. It does not include database credentials or database files.
+For a visual report you can open in a browser, add `--agenteval-html-report artifacts/agenteval-report.html`. The HTML report shows scenario and oracle pass rates, HTTP 2xx tool-call rate, diagnostics, tool traces, and allocation state changes. It is a standalone local file and does not include database credentials or database files.
 
 ## Start the mock API
 ```bash

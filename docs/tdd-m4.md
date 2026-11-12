@@ -16,7 +16,7 @@ The fixture is synchronous to work with standard pytest tests. Async test framew
 
 ## JSON report
 
-`--agenteval-report PATH` writes a UTF-8 JSON document with a versioned schema, total/pass/fail counts, per-scenario verdicts, named oracle checks, agent final message, tool traces and final-state row counts. It intentionally omits raw database credentials and database contents. Parent directories are created when needed. The terminal summary points to the generated file.
+`--agenteval-report PATH` writes a UTF-8 JSON document with a versioned schema, total/pass/fail counts, per-scenario verdicts, named oracle checks, agent final message, tool traces and final-state row counts. `--agenteval-html-report PATH` writes a standalone local dashboard with scenario pass rate, HTTP 2xx tool-call rate, oracle-check rate, diagnostics, traces and allocation state changes. Both create parent directories and can be requested together. They omit raw database credentials and database files. The terminal summary points to generated files.
 
 The report only contains scenario runs made through the `agent_runner` fixture. Direct calls to `ScenarioRunner` are not automatically collected.
 

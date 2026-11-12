@@ -12,7 +12,7 @@ from agenteval.evaluation.scenarios import ScenarioSpec, load_scenarios
 from agenteval.execution.agents import Agent
 from agenteval.execution.faults import FaultPlan
 from agenteval.execution.runner import ScenarioRunResult, ScenarioRunner
-from agenteval.reporting import write_json_report
+from agenteval.reporting import write_html_report, write_json_report
 
 
 _RESULTS_KEY: pytest.StashKey[list[ScenarioRunResult]] = pytest.StashKey()
@@ -50,6 +50,8 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     group = parser.getgroup("agenteval-gym")
     group.addoption("--agenteval-report", metavar="PATH", default=None,
                     help="write scenario results as JSON to PATH")
+    group.addoption("--agenteval-html-report", metavar="PATH", default=None,
+                    help="write a standalone HTML evaluation report to PATH")
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -58,13 +60,18 @@ def pytest_configure(config: pytest.Config) -> None:
 
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
     path = session.config.getoption("--agenteval-report")
+    html_path = session.config.getoption("--agenteval-html-report")
     results = session.config.stash[_RESULTS_KEY]
-    if not path:
+    if not path and not html_path:
         return
-    output = write_json_report(results, path)
+    outputs = []
+    if path:
+        outputs.append(write_json_report(results, path))
+    if html_path:
+        outputs.append(write_html_report(results, html_path))
     reporter = session.config.pluginmanager.get_plugin("terminalreporter")
     if reporter:
-        reporter.write_sep("=", f"AgentEval Gym: {sum(item.passed for item in results)}/{len(results)} scenarios passed; report: {output}")
+        reporter.write_sep("=", f"AgentEval Gym: {sum(item.passed for item in results)}/{len(results)} scenarios passed; reports: {', '.join(map(str, outputs))}")
 
 
 @pytest.fixture
